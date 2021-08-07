@@ -1,13 +1,17 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/0693d5e8-576b-4371-9167-bdc000fcecc1/deploy-status)](https://app.netlify.com/sites/faker-generator/deploys)
 
-# TODO:
+# FakerGenerator
+
+![App screenshot](/git/screenshot.png "Screenshot")
+
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.0.
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/meldiron)
+
+## TODO:
 
 - Responsivity
 - Import / Export configuration
-
-# FakerGenerator
-
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.0.
 
 ## Development server
 

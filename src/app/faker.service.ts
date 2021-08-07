@@ -55,8 +55,11 @@ export class FakerService {
                 property.valueType.children
               );
 
-              const childArr = fillJsonRecursion(children);
-              resultObj[property.name] = childArr;
+              resultObj[property.name] = [];
+              for (let i = 0; i < arraySampleLength; i++) {
+                const childArr = fillJsonRecursion(children);
+                resultObj[property.name].push(childArr);
+              }
             }
           } else if (property.valueType.type === 'object') {
             const childObj = fillJsonRecursion(

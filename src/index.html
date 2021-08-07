@@ -15,7 +15,16 @@
       rel="stylesheet"
     />
   </head>
-  <body class="bg-gray-50">
-    <app-root></app-root>
+  <body class="relative bg-gray-50">
+    <app-root>
+      <div class="fixed inset-0 flex items-center justify-center text-center">
+        <h1 class="p-4 text-2xl font-bold text-gray-900">
+          Loading Faker.js ...
+        </h1>
+      </div>
+    </app-root>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/faker@5.5.3/dist/faker.min.js"></script>
   </body>
 </html>

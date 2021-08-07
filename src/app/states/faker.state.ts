@@ -1,5 +1,4 @@
-import * as FakerLib from 'faker';
-const Faker: any = FakerLib;
+declare const faker: any;
 
 import { NgxsDataRepository } from '@ngxs-labs/data/repositories';
 import { DataAction, StateRepository } from '@ngxs-labs/data/decorators';
@@ -85,7 +84,7 @@ for (const fakerOptionGroup of allowedFakerGroups) {
     .trim();
 
   for (const fakerOption of Object.getOwnPropertyNames(
-    Faker[fakerOptionGroup]
+    faker[fakerOptionGroup]
   )) {
     options.push({
       name: capitalizeFirstLetter(fakerOption)

@@ -1,5 +1,4 @@
-import * as FakerLib from 'faker';
-const Faker: any = FakerLib;
+declare const faker: any;
 
 import { Injectable } from '@angular/core';
 import {
@@ -27,7 +26,7 @@ export class FakerService {
           const simpleValueType = <FakerStateBasicValue>property.valueType;
 
           const executer =
-            Faker[simpleValueType.value.fakerGroup][
+            faker[simpleValueType.value.fakerGroup][
               simpleValueType.value.fakerName
             ];
           resultObj[property.name] = executer();
@@ -44,7 +43,7 @@ export class FakerService {
                   property.valueType.children
                 );
                 const executer =
-                  Faker[simplePropetyChildren.value.fakerGroup][
+                  faker[simplePropetyChildren.value.fakerGroup][
                     simplePropetyChildren.value.fakerName
                   ];
 

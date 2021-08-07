@@ -1,6 +1,8 @@
 <div class="flex justify-center p-6 text-xl font-bold text-white bg-gray-800">
-  <div class="container flex items-center justify-between">
-    <h1>Faker.js JSON Generator</h1>
+  <div
+    class="container flex flex-col items-center justify-between space-y-4  sm:space-y-0 sm:space-x-4 sm:flex-row"
+  >
+    <h1 class="text-center">Faker.js JSON Generator</h1>
     <div>
       <a href="https://github.com/Meldiron/faker-generator">
         <button class="p-2 px-5 bg-gray-900 rounded-lg hover:bg-black">
@@ -14,19 +16,21 @@
 <div class="flex justify-center">
   <div class="container pt-8">
     <div class="grid grid-cols-12 gap-6">
-      <div class="col-span-6 p-8 bg-white rounded-xl">
+      <div class="col-span-12 p-8 bg-white lg:col-span-6 rounded-xl">
         <h1 class="text-xl font-bold text-center text-gray-800">
           Schema definition
         </h1>
 
         <hr class="my-4" />
 
-        <app-property-tree
-          [isRootTree]="true"
-          [properties]="fakerState.snapshot.properties"
-        ></app-property-tree>
+        <div class="w-full overflow-x-scroll">
+          <app-property-tree
+            [isRootTree]="true"
+            [properties]="fakerState.snapshot.properties"
+          ></app-property-tree>
+        </div>
       </div>
-      <div class="col-span-6 p-8 bg-white rounded-xl">
+      <div class="col-span-12 p-8 bg-white lg:col-span-6 rounded-xl">
         <h1 class="text-xl font-bold text-center text-gray-800">
           Generated JSON
         </h1>
@@ -37,13 +41,13 @@
             (input)="onEditArraySampleLength($event)"
             type="number"
             placeholder="Array sample length"
-            class="block w-full col-span-6 border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            class="block w-full col-span-12 border-gray-300 rounded-md shadow-sm  md:col-span-6 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
 
           <button
             (click)="onGenerateJson()"
             type="button"
-            class="inline-flex justify-center col-span-6 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="inline-flex justify-center col-span-12 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm  md:col-span-6 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <span *ngIf="generatedJson === null">Generate JSON</span>
             <span *ngIf="generatedJson !== null">Re-generate JSON</span>

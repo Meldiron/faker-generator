@@ -1,0 +1,185 @@
+<div
+  *ngIf="fakerState.snapshot.isSlideoverOpened"
+  class="fixed inset-0 overflow-hidden"
+  aria-labelledby="slide-over-title"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="absolute inset-0 overflow-hidden">
+    <!--
+    Background overlay, show/hide based on slide-over state.
+
+    Entering: "ease-in-out duration-500"
+      From: "opacity-0"
+      To: "opacity-100"
+    Leaving: "ease-in-out duration-500"
+      From: "opacity-100"
+      To: "opacity-0"
+  -->
+    <div
+      class="absolute inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+      aria-hidden="true"
+      (click)="fakerState.toggleSlideover()"
+    ></div>
+
+    <div class="fixed inset-y-0 right-0 flex max-w-full pl-10">
+      <!--
+      Slide-over panel, show/hide based on slide-over state.
+
+      Entering: "transform transition ease-in-out duration-500 sm:duration-700"
+        From: "translate-x-full"
+        To: "translate-x-0"
+      Leaving: "transform transition ease-in-out duration-500 sm:duration-700"
+        From: "translate-x-0"
+        To: "translate-x-full"
+    -->
+      <div class="w-screen max-w-md">
+        <div
+          class="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl"
+        >
+          <div class="px-4 sm:px-6">
+            <div class="flex items-start justify-between">
+              <h2
+                class="text-lg font-medium text-gray-900"
+                id="slide-over-title"
+              >
+                Add property
+              </h2>
+              <div class="flex items-center ml-3 h-7">
+                <button
+                  (click)="fakerState.toggleSlideover()"
+                  class="text-gray-400 bg-white rounded-md  hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <span class="sr-only">Close panel</span>
+                  <!-- Heroicon name: outline/x -->
+                  <svg
+                    class="w-6 h-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="relative flex-1 px-4 mt-6 sm:px-6">
+            <div class="grid grid-cols-1 mt-6 gap-y-6">
+              <h1>1. Property settings:</h1>
+              <div class="col-span-1">
+                <label
+                  for="first-name"
+                  class="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <div class="mt-1">
+                  <input
+                    autofocus="autofocus"
+                    (change)="onChangeName($event)"
+                    type="text"
+                    class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  />
+                </div>
+              </div>
+
+              <div class="col-span-1">
+                <label class="block text-sm font-medium text-gray-700">
+                  Type
+                </label>
+                <div class="mt-1">
+                  <select
+                    (change)="onChangeType($event)"
+                    class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  >
+                    <option disabled selected value>-- Select a type --</option>
+
+                    <option value="basic">Basic</option>
+                    <option value="object">Object</option>
+                    <option value="array_basic">Array - Basic</option>
+                    <option value="array_object">Array - Object</option>
+                  </select>
+                </div>
+              </div>
+
+              <div
+                class="grid grid-cols-1 mt-6 gap-y-6"
+                *ngIf="
+                  selectedType === 'basic' || selectedType === 'array_basic'
+                "
+              >
+                <hr />
+
+                <h1>2. Value settings:</h1>
+
+                <div class="col-span-1">
+                  <label class="block text-sm font-medium text-gray-700">
+                    Faker group
+                  </label>
+                  <div class="mt-1">
+                    <select
+                      (change)="onChangeGroup($event)"
+                      class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option disabled selected value>
+                        -- Select a group --
+                      </option>
+
+                      <option
+                        *ngFor="
+                          let optionGroup of fakerState.snapshot.fakerOptions
+                        "
+                        [value]="optionGroup.name"
+                      >
+                        {{ optionGroup.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-span-1" *ngIf="selectedGroup">
+                  <label class="block text-sm font-medium text-gray-700">
+                    Faker method
+                  </label>
+                  <div class="mt-1">
+                    <select
+                      (change)="onChangeValue($event)"
+                      class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option disabled selected value>
+                        -- Select a method --
+                      </option>
+
+                      <option
+                        *ngFor="let option of getGroupOptions(selectedGroup)"
+                        [value]="option.name"
+                      >
+                        {{ option.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                (click)="onSubmitNewProperty()"
+                type="button"
+                class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

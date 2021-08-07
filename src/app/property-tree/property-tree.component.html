@@ -1,0 +1,128 @@
+<div class="flex flex-col space-y-2">
+  <div class="select-none" *ngFor="let property of getProperties(properties)">
+    <div
+      (click)="onOpenPropertyDetail($event, property)"
+      class="flex items-center space-x-2 group"
+    >
+      <svg
+        *ngIf="property.valueType.type === 'array'"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5 text-gray-300 group-hover:text-gray-400"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+        />
+      </svg>
+
+      <svg
+        *ngIf="property.valueType.type === 'object'"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5 text-gray-200 group-hover:text-gray-400"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10.496 2.132a1 1 0 00-.992 0l-7 4A1 1 0 003 8v7a1 1 0 100 2h14a1 1 0 100-2V8a1 1 0 00.496-1.868l-7-4zM6 9a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1zm3 1a1 1 0 012 0v3a1 1 0 11-2 0v-3zm5-1a1 1 0 00-1 1v3a1 1 0 102 0v-3a1 1 0 00-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+
+      <svg
+        *ngIf="property.valueType.type === 'basic'"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5 text-gray-200"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+
+      <div
+        [ngClass]="
+          !isBasicAdvancedCheck(property)
+            ? 'cursor-pointer group-hover:underline'
+            : ''
+        "
+        class="relative"
+      >
+        <div class="flex items-center space-x-3">
+          <h3 class="text-gray-900">{{ property.name }}</h3>
+          <span
+            *ngIf="getPropertyValue(property)"
+            class="text-sm text-gray-400"
+          >
+            {{ getPropertyValue(property) }}
+          </span>
+
+          <button
+            (click)="onDeleteProperty($event, property.id)"
+            class="p-2 ml-2 text-red-500 rounded-full  hover:bg-red-100 focus:outline-none hover:text-red-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      *ngIf="property.valueType.type !== 'basic' && property.isOpened"
+      class="mt-2 ml-8"
+    >
+      <app-property-tree
+        [parentPropertyId]="property.id"
+        [properties]="getChildrenProperty(property)"
+      ></app-property-tree>
+    </div>
+  </div>
+
+  <div class="flex space-x-2">
+    <button
+      (click)="onAddProperty($event)"
+      class="
+        flex
+        items-center
+        p-2
+        space-x-2
+        rounded-md
+        hover:bg-indigo-50 hover:text-indigo-600
+        text-indigo-500
+        focus:outline-none
+        w-[fit-content]
+      "
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-5 h-5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+          clip-rule="evenodd"
+        />
+      </svg>
+      <p class="text-sm uppercase">Add property</p>
+    </button>
+  </div>
+</div>

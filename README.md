@@ -1,3 +1,9 @@
+# TODO:
+
+- Generate json
+- When generating array, set length to 5.. editable..
+- Responsivity?
+
 # FakerGenerator
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.0.

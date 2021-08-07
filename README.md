@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/0693d5e8-576b-4371-9167-bdc000fcecc1/deploy-status)](https://app.netlify.com/sites/faker-generator/deploys)
+
 # TODO:
 
 - Responsivity

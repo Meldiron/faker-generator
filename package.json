@@ -21,8 +21,11 @@
     "@angular/router": "~12.2.0",
     "@ngneat/tailwind": "^7.0.3",
     "@ngxs-labs/data": "^6.2.0",
+    "@ngxs/storage-plugin": "^3.7.2",
     "@ngxs/store": "^3.7.2",
     "faker": "^5.5.3",
+    "monaco-editor": "^0.26.1",
+    "ngx-monaco-editor": "^12.0.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"

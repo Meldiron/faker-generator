@@ -14,6 +14,7 @@ import {
 export class PropertyTreeComponent implements OnInit {
   @Input('properties') properties: FakerStateProperty[] | FakerStateValue = [];
   @Input('parentPropertyId') parentPropertyId: string | null = null;
+  @Input('isRootTree') isRootTree: boolean = true;
 
   constructor(public fakerState: FakerState) {}
 

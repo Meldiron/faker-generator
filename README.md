@@ -1,8 +1,7 @@
 # TODO:
 
-- Generate json
-- When generating array, set length to 5.. editable..
-- Responsivity?
+- Responsivity
+- Import / Export configuration
 
 # FakerGenerator
 

@@ -33,13 +33,16 @@ export type FakerStateProperty = {
 
 export type FakerStateGroup = {
   name: string;
+  fakerName: string;
   options: FakerStateOption[];
 };
 
 export type FakerStateOption = {
   name: string;
   group: string;
-  execute: () => string;
+
+  fakerName: string;
+  fakerGroup: string;
 };
 
 export interface FakerStateModel {
@@ -57,7 +60,6 @@ const allowedFakerGroups = [
   'database',
   'datatype',
   'date',
-  'fake',
   'finance',
   'git',
   'hacker',
@@ -90,15 +92,16 @@ for (const fakerOptionGroup of allowedFakerGroups) {
         .replace(/([A-Z])/g, ' $1')
         .trim(),
       group: groupName,
-      execute: () => {
-        return Faker[fakerOptionGroup][fakerOption]();
-      },
+
+      fakerName: fakerOption,
+      fakerGroup: fakerOptionGroup,
     });
   }
 
   fakerOptions.push({
     name: groupName,
     options,
+    fakerName: fakerOptionGroup,
   });
 }
 

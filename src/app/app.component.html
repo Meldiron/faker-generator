@@ -15,6 +15,7 @@
         <hr class="my-4" />
 
         <app-property-tree
+          [isRootTree]="true"
           [properties]="fakerState.snapshot.properties"
         ></app-property-tree>
       </div>
@@ -23,6 +24,59 @@
           Generated JSON
         </h1>
         <hr class="my-4" />
+
+        <div class="grid grid-cols-12 gap-6">
+          <input
+            (input)="onEditArraySampleLength($event)"
+            type="number"
+            placeholder="Array sample length"
+            class="
+              block
+              w-full
+              col-span-6
+              border-gray-300
+              rounded-md
+              shadow-sm
+              focus:ring-indigo-500 focus:border-indigo-500
+              sm:text-sm
+            "
+          />
+
+          <button
+            (click)="onGenerateJson()"
+            type="button"
+            class="
+              inline-flex
+              justify-center
+              col-span-6
+              px-4
+              py-2
+              text-sm
+              font-medium
+              text-white
+              bg-indigo-600
+              border border-transparent
+              rounded-md
+              shadow-sm
+              hover:bg-indigo-700
+              focus:outline-none
+              focus:ring-2
+              focus:ring-offset-2
+              focus:ring-indigo-500
+            "
+          >
+            <span *ngIf="generatedJson === null">Generate JSON</span>
+            <span *ngIf="generatedJson !== null">Re-generate JSON</span>
+          </button>
+        </div>
+
+        <hr class="my-4" />
+
+        <ngx-monaco-editor
+          style="height: 500px"
+          [options]="monacoEditorOptions"
+          [(ngModel)]="generatedJson"
+        ></ngx-monaco-editor>
       </div>
     </div>
   </div>

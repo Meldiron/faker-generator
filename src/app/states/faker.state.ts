@@ -1,8 +1,9 @@
 declare const faker: any;
 
+import produce from 'immer';
 import { NgxsDataRepository } from '@ngxs-labs/data/repositories';
 import { DataAction, StateRepository } from '@ngxs-labs/data/decorators';
-import { patch, updateItem } from '@ngxs/store/operators';
+import { patch } from '@ngxs/store/operators';
 
 import { Injectable } from '@angular/core';
 import { State } from '@ngxs/store';
@@ -119,19 +120,13 @@ for (const fakerOptionGroup of allowedFakerGroups) {
 })
 export class FakerState extends NgxsDataRepository<FakerStateModel> {
   @DataAction() toggleSlideover(parentPropertyId?: string | null) {
-    const state = { ...this.ctx.getState() };
-
-    const patchObj: any = {
-      isSlideoverOpened: (oldVal: boolean) => !oldVal,
-    };
-
-    if (!state.isSlideoverOpened && parentPropertyId !== undefined) {
-      patchObj['parentPropertyId'] = parentPropertyId;
-    }
-
     this.ctx.setState(
-      patch({
-        ...patchObj,
+      produce(this.ctx.getState(), (draft) => {
+        draft.isSlideoverOpened = !draft.isSlideoverOpened;
+
+        if (draft.isSlideoverOpened && parentPropertyId !== undefined) {
+          draft.parentPropertyId = parentPropertyId;
+        }
       })
     );
   }
@@ -143,161 +138,153 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
     propertyGroupId?: string
   ) {
     const state = this.ctx.getState();
+    const parentPropertyId = state.parentPropertyId;
 
-    const addPropertyRecursive = (
-      propertyParentArr: string[],
-      currentPropertyId: string | null,
-      children: FakerStateProperty[]
-    ): any => {
-      // @ts-ignore
-      if (!children || children.type) {
-        return children;
-      }
+    const generateProperty = (): FakerStateProperty => {
+      let valueType: FakerStateProperty['valueType'];
 
-      const propertyArr: FakerStateProperty[] = [
-        ...children.map((childrenProperty) => {
-          return {
-            ...childrenProperty,
-            valueType: {
-              ...childrenProperty.valueType,
-              children: addPropertyRecursive(
-                [...propertyParentArr, childrenProperty.id],
-                childrenProperty.id,
-                // @ts-ignore
-                childrenProperty.valueType.children
-              ),
-            },
-          };
-        }),
-      ];
+      const fakerOptions: any = state.fakerOptions;
 
-      if (currentPropertyId === state.parentPropertyId) {
-        let valueType: FakerStateProperty['valueType'];
+      if (propertyType === 'array_object') {
+        valueType = {
+          type: 'array',
+          children: [],
+        };
+      } else if (propertyType === 'object') {
+        valueType = {
+          type: 'object',
+          children: [],
+        };
+      } else {
+        const fakerValue = fakerOptions
+          .find((o: any) => o.name === propertyGroupId)
+          .options.find((o: any) => o.name === propertyValueId);
 
-        const fakerOptions: any = state.fakerOptions;
-
-        if (propertyType === 'array_object') {
+        if (propertyType === 'array_basic') {
           valueType = {
             type: 'array',
-            children: [],
-          };
-        } else if (propertyType === 'object') {
-          valueType = {
-            type: 'object',
-            children: [],
-          };
-        } else {
-          if (!propertyValueId || !propertyGroupId) {
-            return;
-          }
-
-          const fakerValue = fakerOptions
-            .find((o: any) => o.name === propertyGroupId)
-            .options.find((o: any) => o.name === propertyValueId);
-
-          if (propertyType === 'array_basic') {
-            valueType = {
-              type: 'array',
-              children: {
-                type: 'basic',
-                value: fakerValue,
-              },
-            };
-          } else {
-            valueType = {
+            children: {
               type: 'basic',
               value: fakerValue,
-            };
+            },
+          };
+        } else {
+          valueType = {
+            type: 'basic',
+            value: fakerValue,
+          };
+        }
+      }
+
+      return {
+        name: propertyName,
+        id: `${propertyName}_${Date.now()}`,
+        // id: propertyParentArr.join(';') + propertyName,
+        isOpened: false,
+        valueType: valueType,
+      };
+    };
+
+    const addRecursive = (children: FakerStateProperty[]) => {
+      for (const property of children) {
+        if (property.valueType.type !== 'basic') {
+          // @ts-ignore
+          const isComplex = property.valueType.children.type ? false : true;
+          if (isComplex) {
+            const propertyChildren = <FakerStateProperty[]>(
+              property.valueType.children
+            );
+            addRecursive(propertyChildren);
           }
         }
 
-        propertyArr.push({
-          name: propertyName,
-          id: propertyParentArr.join(';') + propertyName,
-          isOpened: false,
-          valueType: valueType,
-        });
-      }
+        if (
+          property.id !== parentPropertyId ||
+          property.valueType.type === 'basic'
+        ) {
+          continue;
+        }
 
-      return propertyArr;
+        // @ts-ignore
+        const isComplex = property.valueType.children.type ? false : true;
+
+        if (!isComplex) {
+          continue;
+        }
+
+        const propertyChildren = <FakerStateProperty[]>(
+          property.valueType.children
+        );
+
+        propertyChildren.push(generateProperty());
+      }
     };
 
-    console.log('New state', addPropertyRecursive([], null, state.properties));
-
-    this.ctx.setState({
-      ...state,
-      properties: addPropertyRecursive([], null, state.properties),
-      parentPropertyId: null,
-    });
+    this.ctx.setState(
+      produce(state, (draft) => {
+        if (parentPropertyId === null) {
+          draft.properties.push(generateProperty());
+        } else {
+          addRecursive(draft.properties);
+        }
+      })
+    );
   }
 
   @DataAction() deleteProperty(propertyId: string) {
-    const state = this.ctx.getState();
+    const deleteRecursive = (
+      children: FakerStateProperty[]
+    ): FakerStateProperty[] => {
+      return children.filter((property) => {
+        if (property.valueType.type !== 'basic') {
+          // @ts-ignore
+          const isComplex = property.valueType.children.type ? false : true;
+          if (isComplex) {
+            property.valueType.children = deleteRecursive(
+              <FakerStateProperty[]>property.valueType.children
+            );
+          }
+        }
 
-    const deleteItemRecursive = (children: FakerStateProperty[]): any => {
-      // @ts-ignore
-      if (!children || children.type) {
-        return children;
-      }
-
-      return [
-        ...children
-          .filter((childrenProperty) => {
-            return childrenProperty.id !== propertyId;
-          })
-          .map((childrenProperty) => {
-            return {
-              ...childrenProperty,
-              valueType: {
-                ...childrenProperty.valueType,
-                children: deleteItemRecursive(
-                  // @ts-ignore
-                  childrenProperty.valueType.children
-                ),
-              },
-            };
-          }),
-      ];
+        if (property.id === propertyId) {
+          return false;
+        } else {
+          return true;
+        }
+      });
     };
 
-    this.ctx.setState({
-      ...state,
-      properties: deleteItemRecursive(state.properties),
-    });
+    this.ctx.setState(
+      produce(this.ctx.getState(), (draft) => {
+        draft.properties = deleteRecursive(draft.properties);
+      })
+    );
   }
 
   @DataAction() toggleOpenProperty(propertyId: string) {
-    const updateItemRecursive = (children: FakerStateProperty[]): any => {
-      // @ts-ignore
-      if (!children || children.type) {
-        return children;
-      }
+    const updateRecursive = (children: FakerStateProperty[]) => {
+      for (const property of children) {
+        if (property.id === propertyId) {
+          property.isOpened = !property.isOpened;
+        }
 
-      return [
-        ...children.map((childrenProperty) => {
-          return {
-            ...childrenProperty,
-            isOpened:
-              childrenProperty.id === propertyId
-                ? !childrenProperty.isOpened
-                : childrenProperty.isOpened,
-            valueType: {
-              ...childrenProperty.valueType,
-              children: updateItemRecursive(
-                // @ts-ignore
-                childrenProperty.valueType.children
-              ),
-            },
-          };
-        }),
-      ];
+        if (property.valueType.type !== 'basic') {
+          // @ts-ignore
+          const isComplex = property.valueType.children.type ? false : true;
+          if (isComplex) {
+            const propertyChildren = <FakerStateProperty[]>(
+              property.valueType.children
+            );
+            updateRecursive(propertyChildren);
+          }
+        }
+      }
     };
 
-    const state = this.ctx.getState();
-
-    this.ctx.setState({
-      ...state,
-      properties: updateItemRecursive(state.properties),
-    });
+    this.ctx.setState(
+      produce(this.ctx.getState(), (draft) => {
+        updateRecursive(draft.properties);
+      })
+    );
   }
 }

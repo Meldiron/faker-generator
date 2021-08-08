@@ -1,5 +1,3 @@
-declare const faker: any;
-
 import produce from 'immer';
 import { NgxsDataRepository } from '@ngxs-labs/data/repositories';
 import { DataAction, StateRepository } from '@ngxs-labs/data/decorators';
@@ -40,7 +38,6 @@ export type FakerStateGroup = {
 export type FakerStateOption = {
   name: string;
   group: string;
-
   fakerName: string;
   fakerGroup: string;
 };
@@ -143,8 +140,6 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
     const generateProperty = (): FakerStateProperty => {
       let valueType: FakerStateProperty['valueType'];
 
-      const fakerOptions: any = state.fakerOptions;
-
       if (propertyType === 'array_object') {
         valueType = {
           type: 'array',
@@ -156,9 +151,16 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
           children: [],
         };
       } else {
-        const fakerValue = fakerOptions
-          .find((o: any) => o.name === propertyGroupId)
-          .options.find((o: any) => o.name === propertyValueId);
+        const fakerValue = state.fakerOptions
+          .find((fakerGroup) => fakerGroup.name === propertyGroupId)
+          ?.options.find(
+            (fakerOption) => fakerOption.name === propertyValueId
+          ) || {
+          name: 'Error',
+          group: 'Error',
+          fakerName: 'error',
+          fakerGroup: 'error',
+        };
 
         if (propertyType === 'array_basic') {
           valueType = {
@@ -188,9 +190,8 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
     const addRecursive = (children: FakerStateProperty[]) => {
       for (const property of children) {
         if (property.valueType.type !== 'basic') {
-          // @ts-ignore
-          const isComplex = property.valueType.children.type ? false : true;
-          if (isComplex) {
+          const isSimple = 'type' in property.valueType.children;
+          if (!isSimple) {
             const propertyChildren = <FakerStateProperty[]>(
               property.valueType.children
             );
@@ -205,10 +206,8 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
           continue;
         }
 
-        // @ts-ignore
-        const isComplex = property.valueType.children.type ? false : true;
-
-        if (!isComplex) {
+        const isSimple = 'type' in property.valueType.children;
+        if (isSimple) {
           continue;
         }
 
@@ -237,9 +236,9 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
     ): FakerStateProperty[] => {
       return children.filter((property) => {
         if (property.valueType.type !== 'basic') {
-          // @ts-ignore
-          const isComplex = property.valueType.children.type ? false : true;
-          if (isComplex) {
+          const isSimple = 'type' in property.valueType.children;
+
+          if (!isSimple) {
             property.valueType.children = deleteRecursive(
               <FakerStateProperty[]>property.valueType.children
             );
@@ -269,9 +268,8 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
         }
 
         if (property.valueType.type !== 'basic') {
-          // @ts-ignore
-          const isComplex = property.valueType.children.type ? false : true;
-          if (isComplex) {
+          const isSimple = 'type' in property.valueType.children;
+          if (!isSimple) {
             const propertyChildren = <FakerStateProperty[]>(
               property.valueType.children
             );

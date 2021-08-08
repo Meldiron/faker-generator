@@ -1,5 +1,3 @@
-declare const faker: any;
-
 import { Injectable } from '@angular/core';
 import {
   FakerState,
@@ -9,17 +7,19 @@ import {
   FakerStateValue,
 } from './states/faker.state';
 
+export type JsonType = {
+  [key: string]: any;
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class FakerService {
   constructor(private fakerState: FakerState) {}
 
-  generateJson(arraySampleLength: number): {
-    [key: string]: any;
-  } {
-    const fillJsonRecursion = (schema: FakerStateProperty[]): any => {
-      const resultObj: any = {};
+  generateJson(arraySampleLength: number): JsonType {
+    const fillJsonRecursion = (schema: FakerStateProperty[]): JsonType => {
+      const resultObj: JsonType = {};
 
       for (const property of schema) {
         if (property.valueType.type === 'basic') {
@@ -34,9 +34,7 @@ export class FakerService {
           if (property.valueType.type === 'array') {
             resultObj[property.name] = [];
 
-            // @ts-ignore
-            const isSimple = property.valueType.children.type ? true : false;
-
+            const isSimple = 'type' in property.valueType.children;
             if (isSimple) {
               for (let i = 0; i < arraySampleLength; i++) {
                 const simplePropetyChildren = <FakerStateBasicValue>(

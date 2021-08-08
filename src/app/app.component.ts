@@ -23,8 +23,9 @@ export class AppComponent {
     private fakerService: FakerService
   ) {}
 
-  onEditArraySampleLength(e: any) {
-    this.arraySampleLength = +e.target.value;
+  onEditArraySampleLength(e: Event) {
+    const eventTarget = <HTMLInputElement>e.target;
+    this.arraySampleLength = +eventTarget.value;
   }
 
   onGenerateJson() {

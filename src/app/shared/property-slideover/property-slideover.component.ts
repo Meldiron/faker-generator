@@ -25,20 +25,20 @@ export class PropertySlideoverComponent implements OnInit {
     );
   }
 
-  onChangeType(e: any) {
-    this.selectedType = e.target.value;
+  onChangeType(e: Event) {
+    this.selectedType = (<HTMLInputElement>e.target).value;
   }
 
-  onChangeGroup(e: any) {
-    this.selectedGroup = e.target.value;
+  onChangeGroup(e: Event) {
+    this.selectedGroup = (<HTMLInputElement>e.target).value;
   }
 
-  onChangeValue(e: any) {
-    this.selectedValue = e.target.value;
+  onChangeValue(e: Event) {
+    this.selectedValue = (<HTMLInputElement>e.target).value;
   }
 
-  onChangeName(e: any) {
-    this.propertyName = e.target.value;
+  onChangeName(e: Event) {
+    this.propertyName = (<HTMLInputElement>e.target).value;
   }
 
   onSubmitNewProperty() {

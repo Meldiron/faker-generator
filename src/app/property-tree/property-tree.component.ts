@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import {
   FakerState,
+  FakerStateBasicValue,
   FakerStateComplexValue,
   FakerStateProperty,
   FakerStateValue,
@@ -30,15 +31,15 @@ export class PropertyTreeComponent implements OnInit {
     return complexType.children;
   }
 
-  onOpenPropertyDetail(e: any, property: FakerStateProperty) {
+  onOpenPropertyDetail(e: Event, property: FakerStateProperty) {
     e.stopPropagation();
 
     if (property.valueType.type === 'basic') {
       return;
     }
 
-    // @ts-ignore
-    if (property.valueType.children.type) {
+    const isSimple = 'type' in property.valueType.children;
+    if (isSimple) {
       return;
     }
 
@@ -48,14 +49,12 @@ export class PropertyTreeComponent implements OnInit {
   getProperties(
     properties: FakerStateProperty[] | FakerStateValue
   ): FakerStateProperty[] {
-    // @ts-ignore
-    const isSimpleProperty = properties.type ? true : false;
-
+    const isSimple = 'type' in properties;
     const complexProperties = <FakerStateProperty[]>properties;
-    return isSimpleProperty ? [] : complexProperties;
+    return isSimple ? [] : complexProperties;
   }
 
-  onDeleteProperty(e: any, propertyId: string) {
+  onDeleteProperty(e: Event, propertyId: string) {
     e.stopPropagation();
     this.fakerState.deleteProperty(propertyId);
   }
@@ -64,13 +63,10 @@ export class PropertyTreeComponent implements OnInit {
     try {
       if (property.valueType.type !== 'basic') {
         const complexProperty = <FakerStateComplexValue>property.valueType;
+        const complexChildren = <FakerStateBasicValue>complexProperty.children;
 
         const complexValue =
-          // @ts-ignore
-          complexProperty.children.value.group +
-          ':' +
-          // @ts-ignore
-          complexProperty.children.value.name;
+          complexChildren.value.group + ':' + complexChildren.value.name;
 
         if (complexValue) {
           return complexValue;
@@ -93,8 +89,8 @@ export class PropertyTreeComponent implements OnInit {
     if (!isBasic) {
       if (property.valueType.type === 'array') {
         const complexProperty = <FakerStateComplexValue>property.valueType;
-        // @ts-ignore
-        if (complexProperty.children.type) {
+        const isSimple = 'type' in complexProperty.children;
+        if (isSimple) {
           return true;
         }
       }
@@ -103,7 +99,7 @@ export class PropertyTreeComponent implements OnInit {
     return isBasic;
   }
 
-  onAddProperty(e: any) {
+  onAddProperty(e: Event) {
     e.stopPropagation();
 
     this.fakerState.toggleSlideover(this.parentPropertyId);

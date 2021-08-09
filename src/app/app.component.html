@@ -23,7 +23,7 @@
 
         <hr class="my-4" />
 
-        <div class="w-full overflow-x-scroll">
+        <div class="w-full overflow-x-auto">
           <app-property-tree
             [isRootTree]="true"
             [properties]="fakerState.snapshot.properties"
@@ -36,22 +36,58 @@
         </h1>
         <hr class="my-4" />
 
-        <div class="grid grid-cols-12 gap-6">
+        <div class="mb-3">
+          <span class="text-sm font-normal">Amount of samples in arrays:</span>
           <input
             (input)="onEditArraySampleLength($event)"
             type="number"
-            placeholder="Array sample length"
-            class="block w-full col-span-12 border-gray-300 rounded-md shadow-sm  md:col-span-6 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            placeholder="1"
+            class="block w-full col-span-12 mt-2 border-gray-300 rounded-md shadow-sm  md:col-span-6 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           />
+        </div>
 
+        <div class="grid grid-cols-12 gap-6 py-4">
           <button
-            (click)="onGenerateJson()"
+            (click)="onGenerateJson(false)"
             type="button"
             class="inline-flex justify-center col-span-12 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm  md:col-span-6 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <span *ngIf="generatedJson === null">Generate JSON</span>
             <span *ngIf="generatedJson !== null">Re-generate JSON</span>
           </button>
+
+          <div class="relative col-span-12 md:col-span-6">
+            <span
+              *ngIf="isCopyBadgeVisible"
+              class="
+                absolute
+                top-[-15px]
+                left-[50%]
+                transform
+                -translate-x-1/2
+                inline-flex
+                items-center
+                px-2.5
+                py-0.5
+                rounded-full
+                text-xs
+                font-medium
+                border-2 border-green-700
+                bg-green-100
+                text-green-700
+              "
+            >
+              Copied!
+            </span>
+            <button
+              (click)="onGenerateJson(true)"
+              type="button"
+              class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm  md:col-span-6 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <span *ngIf="generatedJson === null">Generate and copy</span>
+              <span *ngIf="generatedJson !== null">Re-generate and copy</span>
+            </button>
+          </div>
         </div>
 
         <hr class="my-4" />

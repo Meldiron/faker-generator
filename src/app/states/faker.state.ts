@@ -44,6 +44,7 @@ export type FakerStateOption = {
 
 export interface FakerStateModel {
   parentPropertyId: string | null;
+  editingProperty: FakerStateProperty | null;
   properties: FakerStateProperty[];
   fakerOptions: FakerStateGroup[];
   isSlideoverOpened: boolean;
@@ -110,22 +111,170 @@ for (const fakerOptionGroup of allowedFakerGroups) {
     properties: [],
     isSlideoverOpened: false,
     parentPropertyId: null,
+    editingProperty: null,
   },
 })
 @Injectable({
   providedIn: 'root',
 })
 export class FakerState extends NgxsDataRepository<FakerStateModel> {
-  @DataAction() toggleSlideover(parentPropertyId?: string | null) {
+  private getPropertyById(
+    propertyId: string,
+    state: FakerStateModel
+  ): FakerStateProperty | null {
+    const findPropertyRecursion = (
+      properties: FakerStateProperty[]
+    ): FakerStateProperty | null => {
+      for (const property of properties) {
+        if (property.id === propertyId) {
+          return property;
+        }
+
+        if (property.valueType.type !== 'basic') {
+          const complexProperty = <FakerStateComplexValue>property.valueType;
+
+          if (!('type' in complexProperty.children)) {
+            return findPropertyRecursion(complexProperty.children);
+          }
+        }
+      }
+
+      return null;
+    };
+
+    return findPropertyRecursion(state.properties);
+  }
+
+  @DataAction() toggleSlideover(
+    parentPropertyId?: string | null,
+    currentPropertyId?: string
+  ) {
     this.ctx.setState(
       produce(this.ctx.getState(), (draft) => {
         draft.isSlideoverOpened = !draft.isSlideoverOpened;
+        draft.editingProperty = currentPropertyId
+          ? this.getPropertyById(currentPropertyId, this.ctx.getState())
+          : null;
 
         if (draft.isSlideoverOpened && parentPropertyId !== undefined) {
           draft.parentPropertyId = parentPropertyId;
         }
       })
     );
+  }
+
+  @DataAction() editProperty(
+    propertyId: string,
+    propertyName: string,
+    propertyType: 'property' | 'array_basic' | 'array_object' | 'object',
+    propertyValueId?: string,
+    propertyGroupId?: string
+  ) {
+    const findPropertyRecursive = (
+      properties: FakerStateProperty[]
+    ): FakerStateProperty | null => {
+      for (const property of properties) {
+        if (property.id === propertyId) {
+          return property;
+        }
+
+        if (property.valueType.type !== 'basic') {
+          if (!('type' in property.valueType.children)) {
+            return findPropertyRecursive(property.valueType.children);
+          }
+        }
+      }
+
+      return null;
+    };
+
+    this.ctx.setState(
+      produce(this.ctx.getState(), (draft) => {
+        const property = findPropertyRecursive(draft.properties);
+        if (!property) {
+          return;
+        }
+
+        const generatedProperty = this.generateProperty(
+          this.ctx.getState(),
+          propertyName,
+          propertyType,
+          propertyGroupId,
+          propertyValueId
+        );
+
+        // Only update property name and faker data. Preserve isOpened and nested properties
+        property.name = generatedProperty.name;
+
+        if (property.valueType.type === 'basic') {
+          const simpleType = <FakerStateBasicValue>generatedProperty.valueType;
+          property.valueType.value = simpleType.value;
+        } else {
+          const complexType = <FakerStateComplexValue>(
+            generatedProperty.valueType
+          );
+          if ('type' in property.valueType.children) {
+            property.valueType.children = complexType.children;
+          }
+        }
+      })
+    );
+  }
+
+  private generateProperty(
+    state: FakerStateModel,
+    propertyName: string,
+    propertyType: string,
+    propertyGroupId: string | undefined,
+    propertyValueId: string | undefined
+  ): FakerStateProperty {
+    let valueType: FakerStateProperty['valueType'];
+
+    if (propertyType === 'array_object') {
+      valueType = {
+        type: 'array',
+        children: [],
+      };
+    } else if (propertyType === 'object') {
+      valueType = {
+        type: 'object',
+        children: [],
+      };
+    } else {
+      const fakerValue = state.fakerOptions
+        .find((fakerGroup) => fakerGroup.fakerName === propertyGroupId)
+        ?.options.find(
+          (fakerOption) => fakerOption.fakerName === propertyValueId
+        ) || {
+        name: 'Error',
+        group: 'Error',
+        fakerName: 'error',
+        fakerGroup: 'error',
+      };
+
+      if (propertyType === 'array_basic') {
+        valueType = {
+          type: 'array',
+          children: {
+            type: 'basic',
+            value: fakerValue,
+          },
+        };
+      } else {
+        valueType = {
+          type: 'basic',
+          value: fakerValue,
+        };
+      }
+    }
+
+    return {
+      name: propertyName,
+      id: `${propertyName}_${Date.now()}`,
+      // id: propertyParentArr.join(';') + propertyName,
+      isOpened: false,
+      valueType: valueType,
+    };
   }
 
   @DataAction() addProperty(
@@ -136,56 +285,6 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
   ) {
     const state = this.ctx.getState();
     const parentPropertyId = state.parentPropertyId;
-
-    const generateProperty = (): FakerStateProperty => {
-      let valueType: FakerStateProperty['valueType'];
-
-      if (propertyType === 'array_object') {
-        valueType = {
-          type: 'array',
-          children: [],
-        };
-      } else if (propertyType === 'object') {
-        valueType = {
-          type: 'object',
-          children: [],
-        };
-      } else {
-        const fakerValue = state.fakerOptions
-          .find((fakerGroup) => fakerGroup.name === propertyGroupId)
-          ?.options.find(
-            (fakerOption) => fakerOption.name === propertyValueId
-          ) || {
-          name: 'Error',
-          group: 'Error',
-          fakerName: 'error',
-          fakerGroup: 'error',
-        };
-
-        if (propertyType === 'array_basic') {
-          valueType = {
-            type: 'array',
-            children: {
-              type: 'basic',
-              value: fakerValue,
-            },
-          };
-        } else {
-          valueType = {
-            type: 'basic',
-            value: fakerValue,
-          };
-        }
-      }
-
-      return {
-        name: propertyName,
-        id: `${propertyName}_${Date.now()}`,
-        // id: propertyParentArr.join(';') + propertyName,
-        isOpened: false,
-        valueType: valueType,
-      };
-    };
 
     const addRecursive = (children: FakerStateProperty[]) => {
       for (const property of children) {
@@ -215,14 +314,30 @@ export class FakerState extends NgxsDataRepository<FakerStateModel> {
           property.valueType.children
         );
 
-        propertyChildren.push(generateProperty());
+        propertyChildren.push(
+          this.generateProperty(
+            state,
+            propertyName,
+            propertyType,
+            propertyGroupId,
+            propertyValueId
+          )
+        );
       }
     };
 
     this.ctx.setState(
       produce(state, (draft) => {
         if (parentPropertyId === null) {
-          draft.properties.push(generateProperty());
+          draft.properties.push(
+            this.generateProperty(
+              state,
+              propertyName,
+              propertyType,
+              propertyGroupId,
+              propertyValueId
+            )
+          );
         } else {
           addRecursive(draft.properties);
         }

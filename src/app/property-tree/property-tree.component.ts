@@ -99,6 +99,12 @@ export class PropertyTreeComponent implements OnInit {
     return isBasic;
   }
 
+  onEditSlideoverProperty(e: Event, propertyId: string) {
+    e.stopPropagation();
+
+    this.fakerState.toggleSlideover(this.parentPropertyId, propertyId);
+  }
+
   onAddProperty(e: Event) {
     e.stopPropagation();
 

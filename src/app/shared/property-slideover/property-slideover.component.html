@@ -43,12 +43,25 @@
                 class="text-lg font-medium text-gray-900"
                 id="slide-over-title"
               >
-                Add property
+                {{
+                  fakerState.snapshot.editingProperty
+                    ? "Edit property"
+                    : "Add property"
+                }}
               </h2>
               <div class="flex items-center ml-3 h-7">
                 <button
                   (click)="fakerState.toggleSlideover()"
-                  class="text-gray-400 bg-white rounded-md  hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  class="
+                    text-gray-400
+                    bg-white
+                    rounded-md
+                    hover:text-gray-500
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-offset-2
+                    focus:ring-indigo-500
+                  "
                 >
                   <span class="sr-only">Close panel</span>
                   <!-- Heroicon name: outline/x -->
@@ -83,10 +96,19 @@
                 </label>
                 <div class="mt-1">
                   <input
+                    [value]="fakerState.snapshot.editingProperty?.name"
                     autofocus="autofocus"
                     (change)="onChangeName($event)"
                     type="text"
-                    class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="
+                      block
+                      w-full
+                      border-gray-300
+                      rounded-md
+                      shadow-sm
+                      focus:ring-indigo-500 focus:border-indigo-500
+                      sm:text-sm
+                    "
                   />
                 </div>
               </div>
@@ -97,15 +119,40 @@
                 </label>
                 <div class="mt-1">
                   <select
+                    [disabled]="
+                      fakerState.snapshot.editingProperty ? true : false
+                    "
                     (change)="onChangeType($event)"
-                    class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    class="
+                      block
+                      w-full
+                      border-gray-300
+                      rounded-md
+                      shadow-sm
+                      disabled:opacity-25
+                      focus:ring-indigo-500 focus:border-indigo-500
+                      sm:text-sm
+                    "
                   >
                     <option disabled selected value>-- Select a type --</option>
 
-                    <option value="basic">Basic</option>
-                    <option value="object">Object</option>
-                    <option value="array_basic">Array - Basic</option>
-                    <option value="array_object">Array - Object</option>
+                    <option
+                      [selected]="
+                        getValueType(fakerState.snapshot.editingProperty) ===
+                        option.value
+                      "
+                      [value]="option.value"
+                      *ngFor="
+                        let option of [
+                          { name: 'Basic', value: 'basic' },
+                          { name: 'Object', value: 'object' },
+                          { name: 'Array - Basic', value: 'array_basic' },
+                          { name: 'Array - Object', value: 'array_object' }
+                        ]
+                      "
+                    >
+                      {{ option.name }}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -113,7 +160,12 @@
               <div
                 class="grid grid-cols-1 mt-6 gap-y-6"
                 *ngIf="
-                  selectedType === 'basic' || selectedType === 'array_basic'
+                  selectedType === 'basic' ||
+                  selectedType === 'array_basic' ||
+                  getValueType(fakerState.snapshot.editingProperty) ===
+                    'basic' ||
+                  getValueType(fakerState.snapshot.editingProperty) ===
+                    'array_basic'
                 "
               >
                 <hr />
@@ -127,17 +179,31 @@
                   <div class="mt-1">
                     <select
                       (change)="onChangeGroup($event)"
-                      class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      class="
+                        block
+                        w-full
+                        border-gray-300
+                        rounded-md
+                        shadow-sm
+                        focus:ring-indigo-500 focus:border-indigo-500
+                        sm:text-sm
+                      "
                     >
                       <option disabled selected value>
                         -- Select a group --
                       </option>
 
                       <option
+                        [selected]="
+                          getTypeGroup(
+                            'fakerGroup',
+                            fakerState.snapshot.editingProperty
+                          ) === optionGroup.fakerName
+                        "
                         *ngFor="
                           let optionGroup of fakerState.snapshot.fakerOptions
                         "
-                        [value]="optionGroup.name"
+                        [value]="optionGroup.fakerName"
                       >
                         {{ optionGroup.name }}
                       </option>
@@ -145,22 +211,53 @@
                   </div>
                 </div>
 
-                <div class="col-span-1" *ngIf="selectedGroup">
+                <div
+                  class="col-span-1"
+                  *ngIf="
+                    selectedGroup ||
+                    getTypeGroup(
+                      'fakerGroup',
+                      fakerState.snapshot.editingProperty
+                    )
+                  "
+                >
                   <label class="block text-sm font-medium text-gray-700">
                     Faker method
                   </label>
                   <div class="mt-1">
                     <select
                       (change)="onChangeValue($event)"
-                      class="block w-full border-gray-300 rounded-md shadow-sm  focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      class="
+                        block
+                        w-full
+                        border-gray-300
+                        rounded-md
+                        shadow-sm
+                        focus:ring-indigo-500 focus:border-indigo-500
+                        sm:text-sm
+                      "
                     >
                       <option disabled selected value>
                         -- Select a method --
                       </option>
 
                       <option
-                        *ngFor="let option of getGroupOptions(selectedGroup)"
-                        [value]="option.name"
+                        [selected]="
+                          getTypeGroup(
+                            'fakerName',
+                            fakerState.snapshot.editingProperty
+                          ) === option.fakerName
+                        "
+                        *ngFor="
+                          let option of getGroupOptions(
+                            selectedGroup ||
+                              getTypeGroup(
+                                'fakerGroup',
+                                fakerState.snapshot.editingProperty
+                              )
+                          )
+                        "
+                        [value]="option.fakerName"
                       >
                         {{ option.name }}
                       </option>
@@ -170,11 +267,32 @@
               </div>
 
               <button
-                (click)="onSubmitNewProperty()"
+                (click)="onSubmitFormProperty()"
                 type="button"
-                class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm  hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                class="
+                  inline-flex
+                  justify-center
+                  px-4
+                  py-2
+                  text-sm
+                  font-medium
+                  text-white
+                  bg-indigo-600
+                  border border-transparent
+                  rounded-md
+                  shadow-sm
+                  hover:bg-indigo-700
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-offset-2
+                  focus:ring-indigo-500
+                "
               >
-                Add
+                {{
+                  fakerState.snapshot.editingProperty
+                    ? "Save changes"
+                    : "Create property"
+                }}
               </button>
             </div>
           </div>

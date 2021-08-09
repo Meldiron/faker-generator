@@ -10,6 +10,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## TODO:
 
+- Animations
 - Import / Export configuration
 
 ## Development server
